@@ -1,15 +1,25 @@
 package br.com.alura.bytebank.domain.conta;
 
+import br.com.alura.bytebank.ConnectionFactory;
 import br.com.alura.bytebank.domain.RegraDeNegocioException;
 import br.com.alura.bytebank.domain.cliente.Cliente;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
 public class ContaService {
 
+    private ConnectionFactory connection;
+
     private Set<Conta> contas = new HashSet<>();
+
+    ContaService(){
+      this.connection =  new ConnectionFactory();
+    }
 
     public Set<Conta> listarContasAbertas() {
         return contas;
@@ -26,8 +36,24 @@ public class ContaService {
         if (contas.contains(conta)) {
             throw new RegraDeNegocioException("Já existe outra conta aberta com o mesmo número!");
         }
+        String sql = "INSERT INTO conta(numero, saldo, client_nome, cliente_cpf, cliente_email)" +
+                " VALUES(?, ?, ?, ?, ?)";
 
-        contas.add(conta);
+        Connection conn = connection.recuperarConexao();
+        try{
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setInt(1, conta.getNumero());
+            preparedStatement.setBigDecimal(2, BigDecimal.ZERO);
+            preparedStatement.setString(3,dadosDaConta.dadosCliente().nome());
+            preparedStatement.setString(4,dadosDaConta.dadosCliente().cpf());
+            preparedStatement.setString(5,dadosDaConta.dadosCliente().email());
+
+            preparedStatement.execute();
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        //contas.add(conta);
     }
 
     public void realizarSaque(Integer numeroDaConta, BigDecimal valor) {
