@@ -5,7 +5,6 @@ import br.com.alura.bytebank.domain.cliente.DadosCadastroCliente;
 import br.com.alura.bytebank.domain.conta.ContaService;
 import br.com.alura.bytebank.domain.conta.DadosAberturaConta;
 
-import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class BytebankApplication {
@@ -100,7 +99,7 @@ public class BytebankApplication {
         System.out.println("Digite o número da conta:");
         var numeroDaConta = teclado.nextInt();
 
-        service.encerrar(numeroDaConta);
+        service.encerrarLogica(numeroDaConta);
 
         System.out.println("Conta encerrada com sucesso!");
         System.out.println("Pressione qualquer tecla e de ENTER para voltar ao menu principal");
