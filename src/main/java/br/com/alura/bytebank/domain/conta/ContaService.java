@@ -17,13 +17,13 @@ public class ContaService {
 
     private Set<Conta> contas = new HashSet<>();
 
-   public ContaService(){
-      this.connection =  new ConnectionFactory();
+    public ContaService() {
+        this.connection = new ConnectionFactory();
     }
 
     public Set<Conta> listarContasAbertas() {
         Connection conn = connection.recuperarConexao();
-       return new ContaDAO(conn).listar();
+        return new ContaDAO(conn).listar();
     }
 
     public BigDecimal consultarSaldo(Integer numeroDaConta) {
@@ -48,7 +48,9 @@ public class ContaService {
             throw new RegraDeNegocioException("Saldo insuficiente!");
         }
 
-        conta.sacar(valor);
+
+        BigDecimal novoValor = conta.getSaldo().subtract(valor);
+        alterar(conta, novoValor);
     }
 
     public void realizarDeposito(Integer numeroDaConta, BigDecimal valor) {
@@ -57,7 +59,9 @@ public class ContaService {
             throw new RegraDeNegocioException("Valor do deposito deve ser superior a zero!");
         }
 
-        conta.depositar(valor);
+
+        BigDecimal novoValor = conta.getSaldo().add(valor);
+        alterar(conta,novoValor);
     }
 
     public void encerrar(Integer numeroDaConta) {
@@ -72,11 +76,23 @@ public class ContaService {
     private Conta buscarContaPorNumero(Integer numero) {
         Connection conn = connection.recuperarConexao();
         Conta conta = new ContaDAO(conn).listarPorNumero(numero);
-        if(conta != null) {
+        if (conta != null) {
             return conta;
         } else {
             throw new RegraDeNegocioException("Não existe conta cadastrada com esse número!");
         }
     }
+
+    public void realizarTransferencia(Integer numeroContaOrigem, Integer numeroContaDestino, BigDecimal valor){
+        this.realizarSaque(numeroContaOrigem,valor);
+        this.realizarDeposito(numeroContaDestino,valor);
     }
+
+    private void alterar(Conta conta, BigDecimal valor) {
+        Connection conn = connection.recuperarConexao();
+        new ContaDAO(conn).alterar(conta.getNumero(), valor);
+    }
+}
+
+
 
